@@ -103,6 +103,39 @@ def bootstrap(data: Credentials, request: Request):
     return {'created': True}
 
 
+@app.get('/api/setup/status')
+def setup_status():
+    with DB_LOCK, db() as con:
+        initialized = con.execute('SELECT 1 FROM users LIMIT 1').fetchone() is not None
+    return {'needs_setup': not initialized, 'database': 'sqlite-development'}
+
+
+class FirstRunCredentials(BaseModel):
+    username: str
+    password: str
+    password_confirm: str
+
+
+@app.post('/api/setup/initialize')
+def setup_initialize(data: FirstRunCredentials):
+    # First-run LAN setup: deliberately no out-of-band code, as requested.
+    if data.password != data.password_confirm:
+        raise HTTPException(400, 'Пароли не совпадают')
+    if not re.fullmatch(r'[a-zA-Z0-9_.-]{3,40}', data.username) or len(data.password) < 12:
+        raise HTTPException(400, 'Логин: 3–40 символов; пароль: минимум 12 символов')
+    with DB_LOCK, db() as con:
+        # BEGIN IMMEDIATE serializes first-admin creation across concurrent requests.
+        con.execute('BEGIN IMMEDIATE')
+        if con.execute('SELECT 1 FROM users LIMIT 1').fetchone():
+            raise HTTPException(409, 'Первоначальная настройка уже завершена')
+        salt = secrets.token_hex(16)
+        con.execute('INSERT INTO users(id,username,salt,password_hash) VALUES(?,?,?,?)',
+                    (str(uuid.uuid4()), data.username, salt, password_hash(data.password, salt)))
+        con.execute('INSERT INTO roles VALUES(?,?)', (data.username, 'admin'))
+        audit(con, data.username, 'setup.initialize', 'admin')
+    return {'created': True}
+
+
 @app.post('/api/login')
 def login(data: Credentials):
     with DB_LOCK, db() as con:
