@@ -13,7 +13,7 @@ APP='/opt/seka-web-dev/current'
 DATA='/var/lib/seka-web-dev'
 UNIT='/etc/systemd/system/seka-web-dev.service'
 SERVICE='seka-web-dev.service'
-PORT="${SEKA_WEB_PORT:-547}"
+PORT="${SEKA_WEB_PORT:-4547}"
 HOST="${SEKA_WEB_HOST:-0.0.0.0}"
 
 fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
@@ -120,9 +120,6 @@ Restart=on-failure
 RestartSec=3
 UMask=0077
 NoNewPrivileges=true
-# Port 547 is privileged (<1024); grant bind capability only to this service.
-AmbientCapabilities=CAP_NET_BIND_SERVICE
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=strict
