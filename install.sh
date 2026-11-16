@@ -93,7 +93,7 @@ cp -a "$WORK/src/app/." "$APP/"
 "$PY" -m venv "$APP/.venv" || fail 'Failed to create application venv'
 "$APP/.venv/bin/python" -m pip install --disable-pip-version-check --no-input -r "$APP/requirements.txt" \
   || fail 'Python dependencies could not be installed'
-"$APP/.venv/bin/python" -c 'import fastapi, uvicorn, multipart; from seka_web.core import app' \
+PYTHONPATH="$APP" "$APP/.venv/bin/python" -c 'import fastapi, uvicorn, multipart; from seka_web.core import app' \
   || fail 'Installed app failed Python import check'
 if ! id -u sekawebdev >/dev/null 2>&1; then
   useradd --system --home-dir "$DATA" --shell /usr/sbin/nologin sekawebdev || fail 'User creation failed'
