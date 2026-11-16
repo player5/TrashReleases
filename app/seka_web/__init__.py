@@ -1,0 +1,1 @@
+"""SEKA WEB platform core."""
