@@ -91,7 +91,7 @@ class Credentials(BaseModel):
 def bootstrap(data: Credentials, request: Request):
     if request.client is None or request.client.host not in ('127.0.0.1', '::1', 'testclient'):
         raise HTTPException(403, 'Bootstrap only via loopback')
-    if not re.fullmatch(r'[a-zA-Z0-9_.-]{3,40}', data.username) or len(data.password) < 12:
+    if not re.fullmatch(r'[a-zA-Z0-9_.-]{3,40}', data.username) or len(data.password) < 1:
         raise HTTPException(400, 'Username invalid or password too short')
     with DB_LOCK, db() as con:
         if con.execute('SELECT 1 FROM users LIMIT 1').fetchone():
@@ -121,8 +121,8 @@ def setup_initialize(data: FirstRunCredentials):
     # First-run LAN setup: deliberately no out-of-band code, as requested.
     if data.password != data.password_confirm:
         raise HTTPException(400, 'Пароли не совпадают')
-    if not re.fullmatch(r'[a-zA-Z0-9_.-]{3,40}', data.username) or len(data.password) < 12:
-        raise HTTPException(400, 'Логин: 3–40 символов; пароль: минимум 12 символов')
+    if not re.fullmatch(r'[a-zA-Z0-9_.-]{3,40}', data.username) or len(data.password) < 1:
+        raise HTTPException(400, 'Логин: 3–40 символов; пароль: минимум 1 символ')
     with DB_LOCK, db() as con:
         # BEGIN IMMEDIATE serializes first-admin creation across concurrent requests.
         con.execute('BEGIN IMMEDIATE')
