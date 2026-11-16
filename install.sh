@@ -120,6 +120,9 @@ Restart=on-failure
 RestartSec=3
 UMask=0077
 NoNewPrivileges=true
+# Port 547 is privileged (<1024); grant bind capability only to this service.
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=strict
