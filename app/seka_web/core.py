@@ -329,6 +329,11 @@ def health():
     return {'status':'ok','database':'sqlite-development','sql_migrations':'not-connected'}
 
 
+@app.get('/static/seka-logo.png')
+def approved_logo():
+    return FileResponse(Path(__file__).parent / 'static' / 'seka-logo.png', media_type='image/png')
+
+
 @app.get('/', response_class=HTMLResponse)
 def home():
     return (Path(__file__).parent / 'static' / 'index.html').read_text(encoding='utf-8')
