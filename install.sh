@@ -99,6 +99,9 @@ if ! id -u sekawebdev >/dev/null 2>&1; then
   useradd --system --home-dir "$DATA" --shell /usr/sbin/nologin sekawebdev || fail 'User creation failed'
 fi
 chown -R sekawebdev:sekawebdev "$APP" "$DATA"
+# mktemp/umask 077 creates the parent directory root-only; the service needs traversal.
+chown root:sekawebdev "$(dirname "$APP")"
+chmod 750 "$(dirname "$APP")"
 chmod 750 "$DATA"
 
 cat > "$UNIT" <<UNITFILE
